@@ -41,8 +41,8 @@ const displayHourlyForecast = (hourlyData) => {
     // console.log(hourlyWeatherHTML)
 }
 
-const getWeatherDetails = async(cityName) => {
-    const API_URL = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${cityName}&days=2`;
+const getWeatherDetails = async(API_URL) => {
+    window.innerWidth <= 768 && searchInput.blur();
 
     try{
         const response = await fetch(API_URL);
@@ -62,17 +62,31 @@ const getWeatherDetails = async(cityName) => {
         
         displayHourlyForecast(combinedHourlyData);
 
+        searchInput.value = data.location.name;
 
     } catch(error) {
         console.log(error)
     }
 }
 
+const setupWeatherRequest = (cityName) => {
+    const API_URL = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${cityName}&days=2`;
+    getWeatherDetails(API_URL);
+}
 searchInput.addEventListener("keyup", (e) => {
     const cityName = searchInput.value.trim();
 
     if(e.key == "Enter" && cityName){
-        getWeatherDetails(cityName);
+        setupWeatherRequest(cityName);
     }
 });
 
+locationButton.addEventListener("click", () => {
+    navigator.geolocation.getCurrentPosition(position => {
+        const {latitude, longitude} = position.coords;
+        const API_URL = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=2`;
+        getWeatherDetails(API_URL);
+    }, error => {
+        console.log("Location access denied. Please enable permission to use this feature.");
+    });
+})
